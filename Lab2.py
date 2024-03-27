@@ -105,30 +105,30 @@ class PolygonInsideManager():
         (или убывания) угла. Теперь осталось только выяснить, лежит ли точка A внутри треугольника CBi_CBi+1. 
 
     """
-    def __random_point_on_segment(self, segment: Tuple[Point, Point]) -> Point:
+    def __midle_point_on_segment(self, segment: Tuple[Point, Point]) -> Point:
         # Выбор случайной точки на отрезке
         p1, p2 = segment
         t = random.uniform(0, 1)
-        x = p1.x + t * (p2.x - p1.x)
-        y = p1.y + t * (p2.y - p1.y)
+        x = (p1.x + p2.x)/2
+        y = (p1.y + p2.y)/2
         return Point(x, y)
     
     def __init__(self, polygon: List[Point]) -> None:
         # Выбор случайного отрезка в многоугольнике
         segment = random.choice([(polygon[i], polygon[(i + 1) % len(polygon)]) for i in range(len(polygon))])
-        self.__random_point = self.__random_point_on_segment(segment)
+        self.__point_inside = self.__midle_point_on_segment(segment)
 
         angles: List[self.__RayFromC] = []
         for i in range(len(polygon)):
             vec_from = (0, 1)  # Вектор от вертикальной прямой до точки C
-            vec_to = (polygon[i].x - self.__random_point.x, polygon[i].y - self.__random_point.y)  # Вектор от C до Bi
+            vec_to = (polygon[i].x - self.__point_inside.x, polygon[i].y - self.__point_inside.y)  # Вектор от C до Bi
             angle = angel_between(vec_from, vec_to)
             angles.append(self.__RayFromC(polygon[i], angle))
         self.__angle = sorted(angles)
         
     def is_inside(self, point: Point) -> bool:
         vec_from = (0, 1)  # Вектор от вертикальной прямой до точки C
-        vec_to = (point.x - self.__random_point.x, point.y - self.__random_point.y)  # Вектор от C до Bi
+        vec_to = (point.x - self.__point_inside.x, point.y - self.__point_inside.y)  # Вектор от C до Bi
         angle = angel_between(vec_from, vec_to)
         
         # Находим индекс первого элемента, большего или равного заданному значению
@@ -144,7 +144,7 @@ class PolygonInsideManager():
         b1 = nearest_higher.point
         b2 = nearest_lower.point
         
-        return is_A_inside_polygon(point, [self.__random_point, b1, b2])
+        return is_A_inside_polygon(point, [self.__point_inside, b1, b2])
         
     @functools.total_ordering
     class __RayFromC:
